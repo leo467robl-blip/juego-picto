@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Aprende Inglés: Cifrado - Modo Individual</title>
+ <style>
+ /* --- Tema Claro (DEFAULT) --- */
+ :root {
+  --bg-body: #f0f2f5;
+  --bg-container: white;
+  --color-text: #333;
+  --color-header: #0056b3;
+  --color-answer-bar: #343a40;
+  --color-key-button: #ffc107;
+  --color-tools-button: #007bff;
+  --color-border: #333;
+  --color-clue: #007bff;
+  --color-danger: #dc3545;
+ }
+ 
+ /* --- Tema Oscuro (Aplica a todo el cuerpo) --- */
+ body.dark-mode {
+  --bg-body: #121212;
+  --bg-container: #1e1e1e;
+  --color-text: #e0e0e0;
+  --color-header: #4da6ff;
+  --color-answer-bar: #2a2a2a;
+  --color-key-button: #5d5d5d;
+  --color-tools-button: #6495ed;
+  --color-border: #9e9e9e;
+  --color-clue: #90caf9;
+  --color-danger: #ff6b6b;
+  color: var(--color-text);
+ }
+ 
+ /* --- Estilos del Cuerpo y Contenedor Principal --- */
+ body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-body);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding-bottom: 100px;
+  transition: background-color 0.3s;
+ }
+ 
+ .main-content {
+  width: 90%;
+  max-width: 850px;
+  position: relative;
+ }
+ 
+ .container {
+  background: var(--bg-container);
+  padding: 3rem 2rem 2rem 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  width: 100%;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  transition: background-color 0.3s, box-shadow 0.3s;
+ }
+ 
+ header h1 {
+  color: var(--color-header);
+  margin-top: 0;
+  margin-bottom: 10px;
+ }
+ 
+ /* --- Botones de Control (Herramientas y Modo Noche) --- */
+ #tools-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: var(--color-tools-button);
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  z-index: 1001;
+  transition: background-color 0.3s;
+ }
+ 
+ #tools-button:hover {
+  background-color: #0056b3;
+ }
+ 
+ #mode-toggle {
+  position: fixed;
+  bottom: 5px;
+  right: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background-color: var(--color-tools-button);
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  z-index: 1002;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.3s;
+ }
+ 
+ .hidden {
+  display: none !important;
+ }
+ 
+ /* --- PANELES DE ESTADÍSTICAS --- */
+ #stats-panel {
+  display: flex;
+  justify-content: space-around;
+  margin: 15px 0;
+  font-size: 1rem;
+  color: var(--color-text);
+  padding: 10px 0;
+  border: 1px dashed var(--color-clue);
+  border-radius: 5px;
+ }
+ #stats-panel p {
+  margin: 0;
+  padding: 0 10px;
+ }
+ 
+ /* --- ÁREA DE LA FRASE (JUEGO) --- */
+ #phrase-container {
+  font-size: 1.8rem;
+  letter-spacing: 0.3rem;
+  margin: 2rem 0;
+  font-family: monospace;
+  line-height: 4.0; /* MANTENIDO PARA MÁXIMA SEPARACIÓN DE LÍNEAS */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+ }
+ 
+ #translation-container {
+  margin: 20px 0;
+ }
+ 
+ /* MARGEN INFERIOR AUMENTADO AL 90% (57px) PARA SEPARAR GRUPOS DE PALABRAS */
+ .word-group { display: inline-flex; margin: 0 30px 57px 30px; flex-wrap: nowrap; }
+ 
+ /* AJUSTE CLAVE: SE REDUCE EL MARGEN INFERIOR PARA ACERCAR LOS NÚMEROS A LA LÍNEA */
+ .letter-box-wrapper { display: flex; flex-direction: column; align-items: center; margin: 0 2px; min-width: 35px; position: relative; }
+ .number-clue {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-text);
+  opacity: 0.7;
+  height: 15px;
+  position: absolute;
+  bottom: -10px; /* ACERCADO: Antes -20px */
+  transition: color 0.3s;
+ }
+ 
+ .letter-box {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  border-bottom: 3px solid var(--color-border);
+  text-align: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 1.3rem;
+  cursor: pointer;
+  color: var(--color-text);
+  transition: border-bottom-color 0.3s, background-color 0.3s, color 0.3s;
+ }
+ .letter-box.selected { border-bottom-color: #ffc107; background-color: rgba(255, 193, 7, 0.2); }
+ .letter-box.filled { color: #28a745; border-bottom-color: #28a745; cursor: default; }
+ .letter-box.clue {
+  color: var(--color-clue) !important;
+  border-bottom-color: var(--color-clue) !important;
+  cursor: default;
+ }
+ 
+ /* --- BARRA INFERIOR (Teclado Y Herramientas) --- */
+ #answer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--color-answer-bar);
+  padding: 5px 0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;
+  min-height: 80px;
+  box-sizing: border-box;
+  transition: background-color 0.3s;
+ }
+ 
+ /* Contenedores dentro de la barra */
+ #alphabet-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 95%;
+ }
+ 
+ #tools-content {
+  background-color: var(--bg-container);
+  color: var(--color-text);
+  width: 100%;
+  max-width: 800px;
+  padding: 10px 20px;
+  border-radius: 5px;
+  box-sizing: border-box;
+  text-align: left;
+ }
+ 
+ /* Estilos del formulario de herramientas */
+ #tools-content h2 { color: var(--color-header); font-size: 1.2rem; margin: 5px 0 10px 0; }
+ .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+ .form-group textarea, .form-group input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+  background-color: var(--bg-body);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+ }
+ 
+ .tool-button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: flex-start;
+ }
+ 
+ .action-button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.3s;
+ }
+ 
+ #add-phrase-btn {
+  background-color: var(--color-tools-button);
+  color: white;
+ }
+ #add-phrase-btn:hover { background-color: #0056b3; }
+ 
+ .delete-btn {
+  background-color: var(--color-danger);
+  color: white;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  margin-left: 10px;
+ }
+ .delete-btn:hover { background-color: #b02a37; }
+ 
+ #reset-key-btn, #reset-stats-btn {
+  background-color: var(--color-danger);
+  color: white;
+ }
+ #reset-key-btn:hover, #reset-stats-btn:hover { background-color: #b02a37; }
+ 
+ .phrase-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  border-bottom: 1px dotted var(--color-border);
+ }
+ 
+ .phrase-text {
+  flex-grow: 1;
+  font-size: 0.8rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-right: 10px;
+ }
+ 
+ /* BOTONES DEL TECLADO VIRTUAL */
+ .key-button-fixed {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  border: none;
+  background-color: var(--color-key-button);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+  margin: 2px;
+  flex-shrink: 0;
+  transition: background-color 0.3s;
+ }
+ body.dark-mode .key-button-fixed {
+  color: #eeeeee;
+ }
+ 
+ #translation-btn {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 15px;
+  font-weight: bold;
+ }
+ </style>
+</head>
+<body>
+ <div class="main-content">
+  <button id="tools-button">Herramientas ⚙️</button>
+ 
+  <div class="container" id="game-view">
+   <header>
+    <h1>Aprende Inglés: Habilidad Mental Cifrado 🧠</h1>
+    <p>1. Haz clic en la línea vacía. 2. Usa el **teclado de tu computadora** o el virtual para adivinar la letra.</p>
+   </header>
+ 
+   <div id="stats-panel">
+    <p>Errores: <span id="mistakes-count" style="color: var(--color-danger); font-weight: bold;">0</span></p>
+    <p>Pistas Iniciales: <span id="clues-count" style="color: var(--color-clue); font-weight: bold;">0</span></p>
+    <p>Casillas Llenadas: <span id="solved-count" style="color: #28a745; font-weight: bold;">0</span></p>
+   </div>
+ 
+   <main>
+    <section id="game-area">
+     <div id="phrase-container">
+     </div>
+     <div id="translation-container"></div>
+     <button id="next-phrase-btn" class="hidden">Siguiente Frase</button>
+    </section>
+   </main>
+  </div>
+ 
+  <div class="container hidden" id="empty-tools-placeholder"></div>
+ </div>
+ 
+ <div id="answer-bar">
+  <div id="alphabet-container">
+  </div>
+ 
+  <div id="tools-content" class="hidden">
+   <header>
+    <h1 style="font-size: 1.5rem; color: var(--color-header); margin-top: 0;">Herramientas de Contenido</h1>
+   </header>
+ 
+   <section id="tool-options">
+    <h2>Añadir Frase con "IA" Simulada 🤖</h2>
+    <form id="add-phrase-form">
+     <div class="form-group">
+      <label for="new-phrase">Frase Original (Inglés/Español):</label>
+      <textarea id="new-phrase" rows="2" placeholder="Introduce la frase a cifrar (Ej: 'Learning to code is fun')." required></textarea>
+     </div>
+     <div class="form-group">
+      <label for="new-translation">Traducción al Español (Opcional):</label>
+      <textarea id="new-translation" rows="2" placeholder="Introduce la traducción (Ej: 'Aprender a programar es divertido')."></textarea>
+     </div>
+     <button type="submit" id="add-phrase-btn" class="action-button">Procesar y Añadir Frase</button>
+     <div id="feedback" style="margin-top: 10px; font-weight: bold; font-size: 0.9rem;"></div>
+    </form>
+ 
+    <h2 style="margin-top: 20px;">Estadísticas (Top 5) 🏆</h2>
+    <div id="statistics-list" style="max-height: 150px; overflow-y: auto; text-align: left; padding: 5px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.9rem;">
+    </div>
+ 
+    <h2 style="margin-top: 20px;">Opciones de Gestión de Datos</h2>
+ 
+    <div class="tool-button-group">
+     <button id="reset-key-btn" class="action-button">Reiniciar Clave de Cifrado 🔑</button>
+     <button id="reset-solved-ciphers-btn" class="action-button">Reiniciar Letras Adivinadas 🆑</button>
+     <button id="reset-stats-btn" class="action-button">Borrar Estadísticas 🗑️</button>
+    </div>
+ 
+    <h2 style="margin-bottom: 5px; margin-top: 20px;">Frases Existentes (Total: <span id="phrase-count">2</span>)</h2>
+    <div id="existing-phrases-list" style="max-height: 150px; overflow-y: auto; text-align: left; padding: 5px; border: 1px solid var(--color-border); border-radius: 5px; font-size: 0.9rem;">
+    </div>
+ 
+   </section>
+  </div>
+ 
+ </div>
+ 
+ <button id="mode-toggle">☀️</button>
+ 
+ <script>
+  document.addEventListener('DOMContentLoaded', () => {
+   // --- ELEMENTOS DOM ---
+   const body = document.body;
+   const gameView = document.getElementById('game-view');
+   const toolsButton = document.getElementById('tools-button');
+   const phraseContainer = document.getElementById('phrase-container');
+   const modeToggle = document.getElementById('mode-toggle');
+   
+   // Elementos de la barra inferior
+   const alphabetContainer = document.getElementById('alphabet-container');
+   const toolsContent = document.getElementById('tools-content');
+   const nextPhraseBtn = document.getElementById('next-phrase-btn');
+   const translationContainer = document.getElementById('translation-container');
+ 
+   // Elementos del formulario de herramientas
+   const addPhraseForm = document.getElementById('add-phrase-form');
+   const newPhraseInput = document.getElementById('new-phrase');
+   const newTranslationInput = document.getElementById('new-translation');
+   const feedbackDiv = document.getElementById('feedback');
+   const phraseCountSpan = document.getElementById('phrase-count');
+   const existingPhrasesList = document.getElementById('existing-phrases-list');
+   const statisticsList = document.getElementById('statistics-list');
+ 
+   // Botones de gestión
+   const resetKeyBtn = document.getElementById('reset-key-btn');
+   const resetSolvedCiphersBtn = document.getElementById('reset-solved-ciphers-btn');
+   const resetStatsBtn = document.getElementById('reset-stats-btn');
+ 
+   // Elementos de stats
+   const mistakesCountSpan = document.getElementById('mistakes-count');
+   const cluesCountSpan = document.getElementById('clues-count');
+   const solvedCountSpan = document.getElementById('solved-count');
+ 
+   // --- VARIABLES DE JUEGO ---
+   let gameData = loadGameData();
+   let selectedBox = null;
+   let isToolsView = false;
+   let startTime = null;
+ 
+   // --- FUNCIONES DE ALMACENAMIENTO Y DATOS ---
+ 
+   function loadGameData() {
+    const defaultKey = getDefaultKey();
+    const defaultPhrases = [
+     { text: "The early bird catches the worm", translation: "El pájaro madrugador atrapa el gusano" },
+     { text: "Actions speak louder than words", translation: "Las acciones hablan más fuerte que las palabras" },
+     { text: "Practice makes perfect", translation: "La práctica hace la perfección" },
+     { text: "A journey of a thousand miles begins with a single step", translation: "Un viaje de mil millas comienza con un solo paso" },
+     { text: "Where there is a will, there is a way", translation: "Donde hay voluntad, hay una manera" }
+    ];
+ 
+    let loadedData = JSON.parse(localStorage.getItem('picto2GameData'));
+ 
+    if (!loadedData) {
+     loadedData = {
+      phrases: defaultPhrases,
+      currentPhraseIndex: 0,
+      currentPhrase: '',
+      cipherKey: defaultKey,
+      solvedCiphers: {},
+      clueIndices: new Set(),
+      mistakes: 0,
+      stats: [],
+      darkMode: false
+     };
+    } else {
+     // Asegurar que los datos cargados tengan las propiedades por defecto si faltan
+     loadedData.phrases = loadedData.phrases || defaultPhrases;
+     loadedData.cipherKey = loadedData.cipherKey || defaultKey;
+     loadedData.solvedCiphers = loadedData.solvedCiphers || {};
+     loadedData.clueIndices = new Set(loadedData.clueIndices || []);
+     loadedData.stats = loadedData.stats || [];
+     // Asegurar que currentPhraseIndex no exceda el número de frases
+     if (loadedData.currentPhraseIndex >= loadedData.phrases.length) {
+      loadedData.currentPhraseIndex = 0;
+     }
+    }
+    
+    // Convertir el objeto plano a Set en caso de que se haya guardado como array
+    if (!(loadedData.clueIndices instanceof Set)) {
+        loadedData.clueIndices = new Set(loadedData.clueIndices);
+    }
+ 
+    // Aplicar el modo oscuro inmediatamente si está guardado
+    if (loadedData.darkMode) {
+        body.classList.add('dark-mode');
+        modeToggle.textContent = '🌙';
+    }
+ 
+    return loadedData;
+   }
+ 
+   function saveGameData() {
+    // Convertir Set a Array antes de guardar en localStorage
+    const dataToSave = { ...gameData, clueIndices: Array.from(gameData.clueIndices) };
+    localStorage.setItem('picto2GameData', JSON.stringify(dataToSave));
+   }
+ 
+   function getDefaultKey() {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const key = {};
+    for (let i = 0; i < alphabet.length; i++) {
+     // Por defecto, cada letra se cifra a sí misma
+     key[alphabet[i]] = alphabet[i];
+    }
+    return key;
+   }
+ 
+   // --- LÓGICA DEL JUEGO ---
+ 
+   function normalize(text) {
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+   }
+ 
+   function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+     const j = Math.floor(Math.random() * (i + 1));
+     [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+   }
+ 
+   function generateCipherKey(phrase) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let availableCiphers = shuffleArray(alphabet.split(''));
+    const newKey = {};
+ 
+    // Asegurar que la clave de cifrado se mantenga para las letras ya adivinadas
+    Object.assign(newKey, gameData.cipherKey);
+ 
+    // Crear el conjunto de letras ya usadas en el cifrado y en la clave
+    const usedCiphers = new Set(Object.values(newKey));
+ 
+    // Filtramos los disponibles
+    availableCiphers = availableCiphers.filter(cipher => !usedCiphers.has(cipher));
+ 
+    for (const char of alphabet) {
+     if (!newKey[char]) {
+      // Si la letra no tiene un cifrado, le asignamos uno nuevo
+      if (availableCiphers.length > 0) {
+       newKey[char] = availableCiphers.pop();
+      } else {
+       // Si nos quedamos sin cifrados, usamos el caracter por defecto
+       newKey[char] = char;
+      }
+     }
+    }
+    gameData.cipherKey = newKey;
+    saveGameData();
+   }
+ 
+   function generateClueLetters() {
+    gameData.clueIndices.clear();
+    const phrase = gameData.currentPhrase;
+    const letterCounts = {};
+    const uniqueLetters = new Set();
+    let totalClues = 0;
+ 
+    // Contar ocurrencias y letras únicas
+    for (const char of phrase) {
+     if (char >= 'A' && char <= 'Z') {
+      uniqueLetters.add(char);
+      letterCounts[char] = (letterCounts[char] || 0) + 1;
+     }
+    }
+ 
+    // Calcular el 10% de las letras únicas para dar como pista (mínimo 1, máximo 5)
+    const clueCountLimit = Math.min(5, Math.max(1, Math.floor(uniqueLetters.size * 0.1)));
+    const sortedLetters = Array.from(uniqueLetters).sort((a, b) => letterCounts[b] - letterCounts[a]);
+    
+    // Seleccionar las letras más frecuentes como pistas
+    const lettersToClue = sortedLetters.slice(0, clueCountLimit);
+ 
+    // Para cada letra seleccionada, encontrar su primera aparición y marcarla como pista
+    lettersToClue.forEach(clueLetter => {
+     for (let i = 0; i < phrase.length; i++) {
+      if (phrase[i] === clueLetter) {
+       // Si la letra ya fue resuelta (solvedCiphers), no la contamos como pista nueva
+       if (!gameData.solvedCiphers[gameData.cipherKey[clueLetter]]) {
+        gameData.clueIndices.add(i);
+        totalClues++;
+        gameData.solvedCiphers[gameData.cipherKey[clueLetter]] = clueLetter; // Marcar como resuelta por pista
+       }
+       break; // Solo marcamos la primera aparición
+      }
+     }
+    });
+    
+    saveGameData();
+    return totalClues;
+   }
+ 
+   function checkWinCondition() {
+    const currentPhrase = gameData.currentPhrase;
+    let solvedLetters = 0;
+    
+    for (let i = 0; i < currentPhrase.length; i++) {
+     const char = currentPhrase[i];
+     if (char >= 'A' && char <= 'Z') {
+      const encryptedChar = gameData.cipherKey[char];
+      if (gameData.solvedCiphers[encryptedChar] === char) {
+       solvedLetters++;
+      } else {
+       // Si falta alguna letra por adivinar, aún no se gana
+       return false;
+      }
+     }
+    }
+ 
+    // Si todas las casillas de letras están resueltas, el juego termina
+    if (solvedLetters > 0) {
+     handleWin();
+     return true;
+    }
+    return false;
+   }
+ 
+   function handleWin() {
+    const timeElapsed = Math.round((Date.now() - startTime) / 1000); // Tiempo en segundos
+    
+    // Registrar la estadística
+    gameData.stats.push({
+     phrase: gameData.phrases[gameData.currentPhraseIndex].text,
+     mistakes: gameData.mistakes,
+     time: timeElapsed,
+     date: new Date().toISOString().slice(0, 10)
+    });
+ 
+    // Limitar las estadísticas a las 20 mejores, ordenadas por menos errores y menos tiempo
+    gameData.stats.sort((a, b) => {
+     if (a.mistakes !== b.mistakes) {
+      return a.mistakes - b.mistakes;
+     }
+     return a.time - b.time;
+    });
+    gameData.stats = gameData.stats.slice(0, 20);
+    
+    saveGameData();
+    renderStats();
+ 
+    // Mostrar mensaje de victoria y botón siguiente
+    phraseContainer.innerHTML += `<p style="color: #28a745; font-weight: bold; font-size: 1.2rem; margin-top: 20px;">¡Felicidades! Frase Resuelta.</p>`;
+    
+    // Mostrar el tiempo y errores finales
+    const winMessage = `<p>Errores finales: ${gameData.mistakes}. Tiempo: ${timeElapsed} segundos.</p>`;
+    phraseContainer.innerHTML += winMessage;
+ 
+    if (gameData.phrases[gameData.currentPhraseIndex].translation) {
+     const translation = gameData.phrases[gameData.currentPhraseIndex].translation;
+     translationContainer.innerHTML = `<p style="font-style: italic; margin-top: 10px; padding: 10px; border: 1px dashed var(--color-clue);">Traducción: ${translation}</p>`;
+    }
+ 
+    nextPhraseBtn.classList.remove('hidden');
+    
+    // Desactivar el teclado interactivo
+    alphabetContainer.querySelectorAll('.key-button-fixed').forEach(btn => btn.disabled = true);
+   }
+   
+   // --- RENDERIZADO Y EVENTOS ---
+ 
+   function renderPhrase() {
+    const phrase = gameData.currentPhrase;
+    phraseContainer.innerHTML = '';
+    let currentWordGroup = null;
+    let solvedLettersCount = 0;
+ 
+    // Reiniciar el inicio del tiempo de juego
+    startTime = Date.now();
+ 
+    for (let i = 0; i < phrase.length; i++) {
+     const char = phrase[i];
+ 
+     if (char === ' ') {
+      // Separador de palabras
+      currentWordGroup = null;
+     } else if (char >= 'A' && char <= 'Z') {
+      // Letras
+      if (!currentWordGroup) {
+       currentWordGroup = document.createElement('div');
+       currentWordGroup.className = 'word-group';
+       phraseContainer.appendChild(currentWordGroup);
+      }
+ 
+      const wrapper = document.createElement('div');
+      wrapper.className = 'letter-box-wrapper';
+      
+      const box = document.createElement('span');
+      box.className = 'letter-box';
+      box.dataset.index = i;
+      const encryptedChar = gameData.cipherKey[char];
+      box.dataset.encrypted = encryptedChar;
+ 
+      // Verificar si la letra ya ha sido adivinada
+      let isSolved = false;
+      if (gameData.solvedCiphers[encryptedChar] === char) {
+       box.textContent = char;
+       box.classList.add('filled');
+       if (gameData.clueIndices.has(i)) {
+        box.classList.add('clue');
+       }
+       solvedLettersCount++;
+       isSolved = true;
+      } else {
+       box.textContent = '';
+       box.addEventListener('click', () => selectBox(box));
+      }
+      
+      // Mostrar el caracter de la posición (índice + 1) en lugar de la letra cifrada
+      const clue = document.createElement('span');
+      clue.className = 'number-clue';
+      clue.textContent = i + 1; /* CAMBIO CLAVE: Muestra la posición (número) */
+ 
+      wrapper.appendChild(box);
+      wrapper.appendChild(clue);
+      currentWordGroup.appendChild(wrapper);
+      
+     } else {
+      // Caracteres especiales (puntuación)
+      if (!currentWordGroup) {
+       currentWordGroup = document.createElement('div');
+       currentWordGroup.className = 'word-group';
+       phraseContainer.appendChild(currentWordGroup);
+      }
+      const punc = document.createElement('span');
+      punc.textContent = char;
+      punc.style.margin = '0 5px';
+      punc.style.fontSize = '1.8rem';
+      punc.style.lineHeight = '30px';
+      currentWordGroup.appendChild(punc);
+      currentWordGroup = null;
+     }
+    }
+    
+    solvedCountSpan.textContent = solvedLettersCount;
+    checkWinCondition();
+   }
+ 
+   function selectBox(box) {
+    if (selectedBox) {
+     selectedBox.classList.remove('selected');
+    }
+    selectedBox = box;
+    selectedBox.classList.add('selected');
+   }
+ 
+   function handleGuess(guess) {
+    if (!selectedBox) return;
+ 
+    const correctLetter = gameData.currentPhrase[selectedBox.dataset.index];
+    const encryptedChar = selectedBox.dataset.encrypted;
+ 
+    // 1. Verificar si la adivinanza es correcta
+    if (guess === correctLetter) {
+     // Adivinanza correcta: llenar la casilla y todas las demás con el mismo cifrado
+     gameData.solvedCiphers[encryptedChar] = correctLetter;
+     saveGameData();
+     renderPhrase(); // Volver a dibujar para aplicar el cambio a todas las casillas
+     
+     // Deseleccionar
+     selectedBox = null;
+ 
+     // 2. Verificar condición de victoria
+     checkWinCondition();
+ 
+    } else {
+     // Adivinanza incorrecta: aumentar errores
+     gameData.mistakes++;
+     mistakesCountSpan.textContent = gameData.mistakes;
+ 
+     // Feedback visual temporal
+     selectedBox.classList.remove('selected');
+     selectedBox.classList.add('wrong');
+     setTimeout(() => {
+      if (selectedBox) selectedBox.classList.remove('wrong');
+     }, 500);
+    }
+ 
+    // Renderizar el teclado interactivo para actualizar las letras adivinadas
+    renderInteractiveKeyboard();
+   }
+ 
+   function renderInteractiveKeyboard() {
+    alphabetContainer.innerHTML = '';
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+ 
+    for (const letter of alphabet) {
+     const key = document.createElement('button');
+     key.className = 'key-button-fixed';
+     key.textContent = letter;
+     key.dataset.letter = letter;
+     key.addEventListener('click', () => handleGuess(letter));
+ 
+     const encryptedChar = gameData.cipherKey[letter];
+     
+     // Deshabilitar la tecla si la letra ya fue adivinada
+     if (gameData.solvedCiphers[encryptedChar]) {
+      key.disabled = true;
+      key.style.backgroundColor = '#28a745';
+      key.style.color = 'white';
+     }
+ 
+     alphabetContainer.appendChild(key);
+    }
+ 
+    // Botón de borrar selección
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'key-button-fixed';
+    clearBtn.textContent = '⌫';
+    clearBtn.style.backgroundColor = 'var(--color-danger)';
+    clearBtn.style.color = 'white';
+    clearBtn.addEventListener('click', () => {
+     if (selectedBox) {
+      selectedBox.classList.remove('selected');
+      selectedBox = null;
+     }
+    });
+    alphabetContainer.appendChild(clearBtn);
+   }
+ 
+   // Captura de teclado físico
+   document.addEventListener('keydown', (e) => {
+    // Si la vista de herramientas está abierta, no procesar las teclas de juego
+    if (isToolsView) return;
+ 
+    const key = normalize(e.key);
+ 
+    if (key.length === 1 && key >= 'A' && key <= 'Z') {
+     e.preventDefault();
+     handleGuess(key);
+    } else if (e.key === 'Escape' || e.key === 'Delete' || e.key === 'Backspace') {
+     if (selectedBox) {
+      selectedBox.classList.remove('selected');
+      selectedBox = null;
+     }
+    }
+   });
+ 
+   // --- LÓGICA DE HERRAMIENTAS Y VISTAS ---
+ 
+   toolsButton.addEventListener('click', () => {
+    isToolsView = !isToolsView;
+ 
+    if (isToolsView) {
+     gameView.classList.add('hidden');
+     toolsContent.classList.remove('hidden');
+     toolsButton.textContent = 'Volver al Juego ↩️';
+     // Asegurar que la lista de frases esté actualizada al entrar
+     renderPhraseList();
+     feedbackDiv.textContent = '';
+    } else {
+     gameView.classList.remove('hidden');
+     toolsContent.classList.add('hidden');
+     toolsButton.textContent = 'Herramientas ⚙️';
+     // Al volver al juego, iniciar una nueva frase por si se hicieron cambios
+     startNewPhrase();
+    }
+   });
+ 
+   modeToggle.addEventListener('click', () => {
+    gameData.darkMode = !gameData.darkMode;
+    body.classList.toggle('dark-mode', gameData.darkMode);
+    modeToggle.textContent = gameData.darkMode ? '🌙' : '☀️';
+    saveGameData();
+   });
+ 
+   addPhraseForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const phraseText = newPhraseInput.value.trim();
+    const translationText = newTranslationInput.value.trim();
+ 
+    if (!phraseText) {
+     feedbackDiv.textContent = '❌ La frase no puede estar vacía.';
+     feedbackDiv.style.color = 'var(--color-danger)';
+     return;
+    }
+ 
+    try {
+     const normalizedPhrase = normalize(phraseText);
+     
+     // Validación simple: asegurar que haya al menos una letra
+     if (!/[A-Z]/.test(normalizedPhrase)) {
+      feedbackDiv.textContent = '❌ La frase debe contener al menos una letra.';
+      feedbackDiv.style.color = 'var(--color-danger)';
+      return;
+     }
+ 
+     // Generar o actualizar la clave antes de añadir la frase
+     generateCipherKey(normalizedPhrase);
+ 
+     gameData.phrases.push({ 
+      text: phraseText, 
+      translation: translationText 
+     });
+ 
+     saveGameData();
+     newPhraseInput.value = '';
+     newTranslationInput.value = '';
+     feedbackDiv.style.color = '#28a745';
+     feedbackDiv.textContent = `✅ Frase añadida y cifrado actualizado. Total: ${gameData.phrases.length}`;
+     renderPhraseList();
+     if (!isToolsView) startNewPhrase();
+ 
+    } catch (error) {
+     feedbackDiv.textContent = `❌ Error al procesar la frase: ${error.message}`;
+     feedbackDiv.style.color = 'var(--color-danger)';
+    }
+   });
+ 
+   function deletePhrase(index) {
+    if (confirm(`¿Estás seguro de que quieres eliminar la frase número ${index + 1}?`)) {
+     gameData.phrases.splice(index, 1);
+     saveGameData();
+     gameData.currentPhraseIndex = 0;
+     renderPhraseList();
+     feedbackDiv.style.color = '#28a745';
+     feedbackDiv.textContent = '✅ Frase eliminada.';
+     if (!isToolsView) startNewPhrase();
+    }
+   }
+ 
+   resetKeyBtn.addEventListener('click', () => {
+    if (confirm('⚠️ ADVERTENCIA: ¿Estás seguro de que quieres REINICIAR COMPLETAMENTE la clave de cifrado? Esto deshará todas las letras asignadas a los valores por defecto.')) {
+     gameData.cipherKey = getDefaultKey();
+     gameData.solvedCiphers = {};
+     saveGameData();
+     renderPhraseList();
+     feedbackDiv.style.color = 'var(--color-danger)';
+     feedbackDiv.textContent = '🔑 Clave de cifrado y Letras Adivinadas restablecidas a los valores iniciales.';
+     if (!isToolsView) startNewPhrase();
+    }
+   });
+ 
+   resetSolvedCiphersBtn.addEventListener('click', () => {
+    if (confirm('⚠️ ¿Estás seguro de que quieres REINICIAR TODAS las letras que has adivinado? Esto vaciará el panel "Letras Adivinadas".')) {
+     gameData.solvedCiphers = {};
+     saveGameData();
+     feedbackDiv.style.color = 'var(--color-danger)';
+     feedbackDiv.textContent = '🆑 Letras adivinadas (cifrado) han sido reiniciadas.';
+     if (!isToolsView) startNewPhrase();
+    }
+   });
+ 
+   resetStatsBtn.addEventListener('click', () => {
+    if (confirm('⚠️ ¿Estás seguro de que quieres BORRAR TODAS las estadísticas de frases completadas?')) {
+     gameData.stats = [];
+     saveGameData();
+     renderStats();
+     feedbackDiv.style.color = 'var(--color-danger)';
+     feedbackDiv.textContent = '🗑️ Estadísticas de juego han sido eliminadas.';
+    }
+   });
+ 
+   function renderPhraseList() {
+    phraseCountSpan.textContent = gameData.phrases.length;
+    existingPhrasesList.innerHTML = '';
+    feedbackDiv.textContent = '';
+ 
+    if (gameData.phrases.length === 0) {
+     existingPhrasesList.innerHTML = '<p style="margin: 0; padding: 5px; color: var(--color-danger);">No hay frases cargadas. ¡Añade una!</p>';
+     return;
+    }
+ 
+    gameData.phrases.forEach((phraseObj, index) => {
+     const item = document.createElement('div');
+     item.className = 'phrase-item';
+ 
+     const textSpan = document.createElement('span');
+     textSpan.className = 'phrase-text';
+     const translationIcon = phraseObj.translation ? ' [🌐]' : '';
+     textSpan.textContent = `${index + 1}. ${phraseObj.text}${translationIcon}`;
+ 
+     const deleteButton = document.createElement('button');
+     deleteButton.className = 'delete-btn';
+     deleteButton.textContent = '🗑️';
+     deleteButton.addEventListener('click', () => deletePhrase(index));
+ 
+     item.appendChild(textSpan);
+     item.appendChild(deleteButton);
+     existingPhrasesList.appendChild(item);
+    });
+   }
+ 
+   function renderStats() {
+    statisticsList.innerHTML = '';
+ 
+    if (gameData.stats.length === 0) {
+     statisticsList.innerHTML = '<p style="margin: 0; padding: 5px; color: var(--color-text); opacity: 0.7;">No has completado ninguna frase aún.</p>';
+     return;
+    }
+ 
+    // Mostrar solo el Top 5
+    const topStats = gameData.stats.slice(0, 5);
+ 
+    topStats.forEach((stat, index) => {
+     const item = document.createElement('div');
+     item.style.padding = '3px 0';
+     item.style.borderBottom = (index < topStats.length - 1) ? '1px dotted var(--color-border)' : 'none';
+     item.innerHTML = `
+      <span style="font-weight: bold; margin-right: 5px;">#${index + 1}</span> 
+      ${stat.phrase} 
+      <span style="float: right;">⏱️ ${stat.time}s | ❌ ${stat.mistakes}</span>
+     `;
+     statisticsList.appendChild(item);
+    });
+   }
+   
+   // --- FLUJO PRINCIPAL DEL JUEGO ---
+   
+   function resetDisplay() {
+    // Solo se usa para resetear visualmente el estado del juego
+    const allBoxes = document.querySelectorAll('.letter-box');
+    allBoxes.forEach(box => {
+     box.classList.remove('selected', 'filled', 'clue');
+     box.textContent = '';
+     box.addEventListener('click', () => selectBox(box));
+    });
+    
+    // Si la frase actual tiene traducción, mostrar el botón
+    const currentPhraseObj = gameData.phrases[gameData.currentPhraseIndex];
+ 
+    if (currentPhraseObj.translation) {
+     const translationBtn = document.createElement('button');
+     translationBtn.id = 'translation-btn';
+     translationBtn.textContent = 'Ver Traducción 🌐';
+     translationBtn.addEventListener('click', () => {
+      translationContainer.innerHTML = `<p style="font-style: italic; margin-top: 10px; padding: 10px; border: 1px dashed var(--color-clue);">Traducción: ${currentPhraseObj.translation}</p>`;
+      translationBtn.style.display = 'none';
+     });
+     phraseContainer.appendChild(translationBtn);
+    }
+ 
+    nextPhraseBtn.classList.remove('hidden');
+   }
+ 
+   function startNewPhrase() {
+    translationContainer.innerHTML = '';
+ 
+    if (gameData.phrases.length === 0) {
+     phraseContainer.innerHTML = '<h2>¡Necesitas frases para jugar!</h2><p>Ve a Herramientas para añadir una.</p>';
+     nextPhraseBtn.classList.add('hidden');
+     return;
+    }
+ 
+    if (gameData.currentPhraseIndex >= gameData.phrases.length) {
+     gameData.currentPhraseIndex = 0;
+    }
+ 
+    const currentPhraseObj = gameData.phrases[gameData.currentPhraseIndex];
+    gameData.currentPhrase = normalize(currentPhraseObj.text);
+    
+    // Primero, asegurar que la clave de cifrado se ha generado para esta frase
+    generateCipherKey(gameData.currentPhrase);
+    
+    gameData.clueIndices.clear();
+    selectedBox = null;
+    gameData.mistakes = 0;
+ 
+    const cluesCount = generateClueLetters();
+    renderPhrase();
+    renderInteractiveKeyboard();
+    nextPhraseBtn.classList.add('hidden');
+ 
+    // Actualizar contadores en el panel
+    mistakesCountSpan.textContent = gameData.mistakes;
+    cluesCountSpan.textContent = cluesCount;
+    // Al inicio, el contador de casillas llenadas es el número de pistas
+    const initialSolved = document.querySelectorAll('.letter-box.filled').length;
+    solvedCountSpan.textContent = initialSolved;
+    
+    // Si la frase tiene traducción, añadir el botón
+    if (currentPhraseObj.translation) {
+     const translationBtn = document.createElement('button');
+     translationBtn.id = 'translation-btn';
+     translationBtn.textContent = 'Ver Traducción 🌐';
+     translationBtn.addEventListener('click', () => {
+      translationContainer.innerHTML = `<p style="font-style: italic; margin-top: 10px; padding: 10px; border: 1px dashed var(--color-clue);">Traducción: ${currentPhraseObj.translation}</p>`;
+      translationBtn.style.display = 'none';
+     });
+     // Usamos insertBefore para que el botón aparezca después de la frase pero antes de 'next-phrase-btn'
+     const nextBtn = document.getElementById('next-phrase-btn');
+     if (nextBtn && nextBtn.parentNode) {
+         nextBtn.parentNode.insertBefore(translationBtn, nextBtn);
+     }
+    }
+   }
+ 
+   // --- INICIO DEL JUEGO Y EVENTOS ---
+   nextPhraseBtn.addEventListener('click', () => {
+    gameData.currentPhraseIndex++;
+    startNewPhrase();
+   });
+ 
+   // Iniciar el juego
+   startNewPhrase();
+   renderPhraseList();
+   renderStats();
+  });
+ </script>
+</body>
+</html>
